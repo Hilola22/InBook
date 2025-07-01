@@ -81,4 +81,12 @@ export class AdminService {
 
     return { message: "Admin activated successfully" };
   }
+
+  async updateRefreshTokenAdmin(id: number, refreshToken: string) {
+    const updatedAdmin = await this.adminModel.update(
+      { refreshToken },
+      { where: { id } }
+    );
+    return updatedAdmin;
+  }
 }

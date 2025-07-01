@@ -8,12 +8,16 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
 import { CreateAdminDto } from "./dto/create-admin.dto";
 import { UpdateAdminDto } from "./dto/update-admin.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Admin } from "./models/admin.model";
+import { AdminJwtGuard } from "../common/guards/admin.guard";
+import { AdminIsCreatorGuard } from "../common/guards/admin-is_creator.guard";
+import { AdminSelfGuard } from "../common/guards/admin-self.guard";
 
 @ApiTags("Adminlar")
 @Controller("admin")
@@ -26,6 +30,7 @@ export class AdminController {
     description: "Yangi admin qo'shildi ✅",
     type: Admin,
   })
+  @UseGuards(AdminJwtGuard, AdminIsCreatorGuard)
   @Post()
   create(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
@@ -37,6 +42,7 @@ export class AdminController {
     description: "Barcha adminlar: ",
     type: [Admin],
   })
+  @UseGuards(AdminJwtGuard, AdminIsCreatorGuard)
   @Get()
   findAll() {
     return this.adminService.findAll();
@@ -48,6 +54,7 @@ export class AdminController {
     description: "Admin: ",
     type: Admin,
   })
+  @UseGuards(AdminJwtGuard, AdminIsCreatorGuard)
   @Get("email")
   findAdminByEmail(@Query("email") email: string) {
     return this.adminService.findAdminByEmail(email);
@@ -63,6 +70,7 @@ export class AdminController {
     return this.adminService.activateAdmin(link);
   }
 
+  @UseGuards(AdminJwtGuard, AdminSelfGuard)
   @ApiOperation({ summary: "Admin ma'lumotlarini Id orqali olish" })
   @ApiResponse({
     status: 200,
@@ -80,6 +88,7 @@ export class AdminController {
     description: "Admin ma'lumotlari yangilandi ✅",
     type: Admin,
   })
+  @UseGuards(AdminJwtGuard, AdminSelfGuard)
   @Patch(":id")
   update(
     @Param("id", ParseIntPipe) id: number,
@@ -94,6 +103,7 @@ export class AdminController {
     description: "Admin ma'lumotlari o'chirildi ✅",
     type: Admin,
   })
+  @UseGuards(AdminJwtGuard, AdminSelfGuard)
   @Delete(":id")
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.adminService.remove(id);

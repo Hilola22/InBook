@@ -4,6 +4,8 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "../users/models/user.model";
@@ -93,60 +95,86 @@ export class AuthService {
     user.refreshToken = await bcrypt.hash(refreshToken, 7);
     await user.save();
 
-    res.cookie("refresh_token", refreshToken, {
+    res.cookie("refreshToken", refreshToken, {
       maxAge: +process.env.COOKIE_TIME!,
       httpOnly: true,
     });
     return { message: "User signed in", id: user.id, accessToken };
   }
 
-  async signoutUser(res: Response) {
-    res.clearCookie("refresh_token");
-    return { message: "User signed out successfully" };
-  }
+  // async signoutUser(refreshToken: string, res: Response) {
+  //   res.clearCookie("refresh_token");
+  //   return { message: "User signed out successfully" };
+  // }
 
-  async refreshUser(refreshToken: string, res: Response) {
-    if (!refreshToken) {
-      throw new UnauthorizedException("Refresh token not found");
-    }
-
-    let payload;
+  async signoutUser(refreshToken: string, res: Response) {
+    let userData: any;
     try {
-      payload = await this.jwtService.verifyAsync(refreshToken, {
+      userData = await this.jwtService.verify(refreshToken, {
         secret: process.env.REFRESH_TOKEN_KEY,
       });
     } catch (error) {
       console.log(error);
-      throw new UnauthorizedException("Invalid refresh token");
+      throw new BadRequestException(error);
+    }
+    if (!userData) {
+      throw new ForbiddenException("User not verified");
     }
 
-    const user = await this.usersService.findOne(payload.id);
-    if (!user) {
-      throw new UnauthorizedException("User not found");
+    await this.usersService.updateRefreshToken(userData.id, "");
+
+    res.clearCookie("refreshToken");
+    return { message: "User logged out successfully" };
+  }
+
+  async refreshUser(
+    userId: number,
+    refreshTokenFromCookie: string,
+    res: Response
+  ) {
+    const decodedToken = await this.jwtService.decode(refreshTokenFromCookie);
+    console.log(userId);
+    console.log(decodedToken["id"]);
+
+    if (userId !== decodedToken["id"]) {
+      throw new ForbiddenException("Ruxsat etilmagan");
     }
 
-    const isRefreshTokenValid = await bcrypt.compare(
-      refreshToken,
+    const user = await this.usersService.findOne(userId);
+
+    if (!user || !user.refreshToken) {
+      throw new NotFoundException("user not found");
+    }
+
+    const tokenMatch = await bcrypt.compare(
+      refreshTokenFromCookie,
       user.refreshToken
     );
-    if (!isRefreshTokenValid) {
-      throw new UnauthorizedException("Invalid refresh token");
+
+    if (!tokenMatch) {
+      throw new ForbiddenException("Forbidden");
     }
 
-    const tokens = await this.generateTokens(user);
-    user.refreshToken = await bcrypt.hash(tokens.refreshToken, 7);
-    await user.save();
+    const { accessToken, refreshToken } = await this.generateTokens(user);
 
-    res.cookie("refresh_token", tokens.refreshToken, {
+    const refresh_token = await bcrypt.hash(refreshToken, 7);
+    await this.usersService.updateRefreshToken(user.id, refresh_token);
+    res.cookie("refreshToken", refreshToken, {
       maxAge: +process.env.COOKIE_TIME!,
       httpOnly: true,
     });
+    const response = {
+      message: "User refreshed!",
+      userId: user.id,
+      accessToken: accessToken,
+    };
 
-    return { message: "Tokens refreshed", accessToken: tokens.accessToken };
+    return response;
   }
 
   async activateUser(activationLink: string) {
-    const user = await this.usersService.findUserByActivationLink(activationLink);
+    const user =
+      await this.usersService.findUserByActivationLink(activationLink);
     if (!user) {
       throw new BadRequestException("Invalid activation link");
     }
@@ -230,58 +258,79 @@ export class AuthService {
     admin.refreshToken = await bcrypt.hash(refreshToken, 7);
     await admin.save();
 
-    res.cookie("refresh_token", refreshToken, {
+    res.cookie("refresh_token_admin", refreshToken, {
       maxAge: +process.env.COOKIE_TIME_ADMIN!,
       httpOnly: true,
     });
     return { message: "Admin signed in!", id: admin.id, accessToken };
   }
 
-  async signoutAdmin(res: Response) {
-    res.clearCookie("refresh_token");
-    return { message: "Admin signed out successfully" };
-  }
-
-  async refreshAdmin(refreshToken: string, res: Response) {
-    if (!refreshToken) {
-      throw new UnauthorizedException("Refresh token not found");
-    }
-
-    let payload;
+  async signoutAdmin(refreshToken: string, res: Response) {
+    let adminData: any;
     try {
-      payload = await this.jwtService.verifyAsync(refreshToken, {
+      adminData = await this.jwtService.verify(refreshToken, {
         secret: process.env.REFRESH_TOKEN_KEY_ADMIN,
       });
     } catch (error) {
-      throw new UnauthorizedException("Invalid refresh token");
+      console.log(error);
+      throw new BadRequestException(error);
+    }
+    if (!adminData) {
+      throw new ForbiddenException("Admin not verified");
     }
 
-    const admin = await this.adminService.findOne(payload.id);
-    if (!admin) {
-      throw new UnauthorizedException("Admin not found");
+    await this.usersService.updateRefreshToken(adminData.id, "");
+
+    res.clearCookie("refresh_token_admin");
+    return { message: "Admin logged out successfully" };
+  }
+
+  async refreshAdmin(
+    adminId: number,
+    refreshTokenFromCookie: string,
+    res: Response
+  ) {
+    const decodedToken = await this.jwtService.decode(refreshTokenFromCookie);
+    console.log(adminId);
+    console.log(decodedToken["id"]);
+    const adminOne = await this.adminService.findOne(adminId);
+
+    if (adminId !== decodedToken["id"]) {
+      throw new ForbiddenException("Ruxsat etilmagan");
     }
 
-    const isRefreshTokenValid = await bcrypt.compare(
-      refreshToken,
-      admin.refreshToken
+    if (!adminOne || !adminOne.refreshToken) {
+      throw new NotFoundException("admin not found");
+    }
+
+    const tokenMatch = await bcrypt.compare(
+      refreshTokenFromCookie,
+      adminOne.refreshToken
     );
-    if (!isRefreshTokenValid) {
-      throw new UnauthorizedException("Invalid refresh token");
+
+    if (!tokenMatch) {
+      throw new ForbiddenException("Forbidden");
     }
 
-    const tokens = await this.generateTokensAdmin(admin);
-    admin.refreshToken = await bcrypt.hash(tokens.refreshToken, 7);
-    await admin.save();
+    const { accessToken, refreshToken } =
+      await this.generateTokensAdmin(adminOne);
 
-    res.cookie("refresh_token", tokens.refreshToken, {
+    const refresh_token_admin = await bcrypt.hash(refreshToken, 7);
+    await this.adminService.updateRefreshTokenAdmin(
+      adminOne.id,
+      refresh_token_admin
+    );
+    res.cookie("refresh_token_admin", refreshToken, {
       maxAge: +process.env.COOKIE_TIME_ADMIN!,
       httpOnly: true,
     });
-
-    return {
-      message: "Admin tokens refreshed",
-      accessToken: tokens.accessToken,
+    const response = {
+      message: "Admin refreshed!",
+      adminId: adminOne.id,
+      accessToken: accessToken,
     };
+
+    return response;
   }
 
   async activateAdmin(activationLink: string) {

@@ -8,12 +8,16 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { User } from "./models/user.model";
+import { UserGuard } from "../common/guards/user.guard";
+import { UserSelfGuard } from "../common/guards/user-self.guard";
+import { UserIsPremiumGuard } from "../common/guards/user-is_premium.guard";
 
 @ApiTags("Foydalanuvchilar")
 @Controller("users")
@@ -26,6 +30,7 @@ export class UsersController {
     description: "Yangi foydalanuvchi qo'shildi ✅",
     type: User,
   })
+  @UseGuards(UserGuard)
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
@@ -37,6 +42,7 @@ export class UsersController {
     description: "Barcha foydalanuvchilar: ",
     type: [User],
   })
+  @UseGuards(UserGuard, UserIsPremiumGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
@@ -48,6 +54,7 @@ export class UsersController {
     description: "Foydalanuvchi: ",
     type: User,
   })
+  @UseGuards(UserGuard)
   @Get("email")
   findUserByEmail(@Query("email") email: string) {
     return this.usersService.findUserByEmail(email);
@@ -59,6 +66,8 @@ export class UsersController {
     description: "Foydalanuvchi: ",
     type: User,
   })
+  @UseGuards(UserSelfGuard)
+  @UseGuards(UserGuard)
   @Get(":id")
   findOne(@Param("id", ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
@@ -70,6 +79,8 @@ export class UsersController {
     description: "Foydalanuvchi ma'lumotlari yangilandi ✅",
     type: User,
   })
+  @UseGuards(UserSelfGuard)
+  @UseGuards(UserGuard)
   @Patch(":id")
   update(
     @Param("id", ParseIntPipe) id: number,
@@ -83,6 +94,8 @@ export class UsersController {
     status: 200,
     description: "Foydalanuvchi ma'lumotlari o'chirildi ✅",
   })
+  // @UseGuards(UserSelfGuard)
+  // @UseGuards(UserGuard)
   @Delete(":id")
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.usersService.remove(id);

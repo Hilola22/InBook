@@ -76,4 +76,12 @@ export class UsersService {
     }
     return "User topilmadi";
   }
+
+  async updateRefreshToken(id: number, refreshToken: string) {
+    const updatedUser = await this.userModel.update(
+      { refreshToken },
+      { where: { id } }
+    );
+    return updatedUser;
+  }
 }

@@ -8,6 +8,7 @@ import {
   Get,
   Param,
   Req,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../users/dto/create-user.dto";
@@ -16,6 +17,7 @@ import { Response, Request } from "express";
 import { CreateAdminDto } from "../admin/dto/create-admin.dto";
 import { SigninAdminDto } from "../admin/dto/signin-admin.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { CookieGetter } from "../common/decorators/cookie-getter.decorators";
 
 @ApiTags("Autentifikatsiya")
 @Controller("auth")
@@ -54,20 +56,25 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post("signout")
-  signoutUser(@Res({ passthrough: true }) res: Response) {
-    return this.authService.signoutUser(res);
+  signoutUser(
+    @CookieGetter("refreshToken") refreshToken: string, //2 usul
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.signoutUser(refreshToken, res);
   }
-
   @ApiOperation({ summary: "Foydalanuvchi tokenini yangilash" })
   @ApiResponse({
     status: 200,
     description: "Foydalanuvchi tokeni yangilandi ✅",
   })
   @HttpCode(HttpStatus.OK)
-  @Post("refresh")
-  refreshUser(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const { refresh_token } = req.cookies;
-    return this.authService.refreshUser(refresh_token, res);
+  @Post(":id/refresh")
+  refreshUser(
+    @Param("id", ParseIntPipe) id: number,
+    @CookieGetter("refreshToken") refreshToken: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.refreshUser(id, refreshToken, res);
   }
 
   @ApiOperation({ summary: "Foydalanuvchi hisobini faollashtirish" })
@@ -111,8 +118,11 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post("signout-admin")
-  signoutAdmin(@Res({ passthrough: true }) res: Response) {
-    return this.authService.signoutAdmin(res);
+  signoutAdmin(
+    @CookieGetter("refresh_token_admin") refreshToken: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.signoutAdmin(refreshToken, res);
   }
 
   @ApiOperation({ summary: "Admin tokenini yangilash" })
@@ -121,10 +131,13 @@ export class AuthController {
     description: "Admin tokeni yangilandi ✅",
   })
   @HttpCode(HttpStatus.OK)
-  @Post("refresh-admin")
-  refreshAdmin(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const { refresh_token } = req.cookies;
-    return this.authService.refreshAdmin(refresh_token, res);
+  @Post(":id/refresh-admin")
+  refreshAdmin(
+    @Param("id", ParseIntPipe) id: number,
+    @CookieGetter("refresh_token_admin") refreshToken: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    return this.authService.refreshAdmin(id, refreshToken, res);
   }
 
   @ApiOperation({ summary: "Admin hisobini faollashtirish" })

@@ -7,9 +7,29 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { AdminModule } from './admin/admin.module';
 import { Admin } from './admin/models/admin.model';
+import { GenreModule } from './genre/genre.module';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { BOT_NAME } from './app.constants';
+import { BotModule } from './bot/bot.module';
+import { CategoriesModule } from './categories/categories.module';
+import { Genre } from './genre/models/genre.model';
+import { Categories } from './categories/models/category.model';
+import { AuthorsModule } from './authors/authors.module';
+import { Authors } from './authors/models/author.model';
+import { LanguagesModule } from './languages/languages.module';
+import { Language } from './languages/models/language.model';
 
 @Module({
   imports: [
+    TelegrafModule.forRootAsync({
+      botName: BOT_NAME,
+      useFactory: () => ({
+        token: process.env.BOT_TOKEN!,
+        middlewares: [],
+        include: [BotModule],
+      }),
+    }),
+
     ConfigModule.forRoot({
       envFilePath: ".env",
       isGlobal: true,
@@ -21,7 +41,7 @@ import { Admin } from './admin/models/admin.model';
       username: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DB,
-      models: [User, Admin],
+      models: [User, Admin, Genre, Categories, Authors, Language],
       autoLoadModels: true,
       logging: false,
       sync: { alter: true },
@@ -30,6 +50,11 @@ import { Admin } from './admin/models/admin.model';
     AuthModule,
     MailModule,
     AdminModule,
+    GenreModule,
+    BotModule,
+    CategoriesModule,
+    AuthorsModule,
+    LanguagesModule,
   ],
   controllers: [],
   providers: [],
