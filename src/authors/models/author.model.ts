@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
+import { Book } from "../../books/models/book.model";
 
 interface IAuthorCreationAttr {
   full_name: string;
@@ -46,4 +47,7 @@ export class Authors extends Model<Authors, IAuthorCreationAttr> {
     type: DataType.STRING,
   })
   declare photo_url: string;
+
+  @HasMany(() => Book)
+  books: Book[]
 }

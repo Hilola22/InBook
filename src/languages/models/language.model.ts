@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
+import { BookVersion } from "../../book-version/models/book-version.model";
 
 interface ILanguageCreationAttr {
   code: string;
@@ -47,4 +48,7 @@ export class Language extends Model<Language, ILanguageCreationAttr> {
     type: DataType.STRING,
   })
   declare flag: string;
+
+  @HasMany(() => BookVersion)
+  book_versions: BookVersion[];
 }

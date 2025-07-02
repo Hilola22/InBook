@@ -1,23 +1,31 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { SequelizeModule } from '@nestjs/sequelize';
-import { UsersModule } from './users/users.module';
-import { User } from './users/models/user.model';
-import { AuthModule } from './auth/auth.module';
-import { MailModule } from './mail/mail.module';
-import { AdminModule } from './admin/admin.module';
-import { Admin } from './admin/models/admin.model';
-import { GenreModule } from './genre/genre.module';
-import { TelegrafModule } from 'nestjs-telegraf';
-import { BOT_NAME } from './app.constants';
-import { BotModule } from './bot/bot.module';
-import { CategoriesModule } from './categories/categories.module';
-import { Genre } from './genre/models/genre.model';
-import { Categories } from './categories/models/category.model';
-import { AuthorsModule } from './authors/authors.module';
-import { Authors } from './authors/models/author.model';
-import { LanguagesModule } from './languages/languages.module';
-import { Language } from './languages/models/language.model';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { SequelizeModule } from "@nestjs/sequelize";
+import { UsersModule } from "./users/users.module";
+import { User } from "./users/models/user.model";
+import { AuthModule } from "./auth/auth.module";
+import { MailModule } from "./mail/mail.module";
+import { AdminModule } from "./admin/admin.module";
+import { Admin } from "./admin/models/admin.model";
+import { GenreModule } from "./genre/genre.module";
+import { TelegrafModule } from "nestjs-telegraf";
+import { BOT_NAME } from "./app.constants";
+import { BotModule } from "./bot/bot.module";
+import { CategoriesModule } from "./categories/categories.module";
+import { Genre } from "./genre/models/genre.model";
+import { Categories } from "./categories/models/category.model";
+import { AuthorsModule } from "./authors/authors.module";
+import { Authors } from "./authors/models/author.model";
+import { LanguagesModule } from "./languages/languages.module";
+import { Language } from "./languages/models/language.model";
+import { BooksModule } from "./books/books.module";
+import { BookVersionModule } from "./book-version/book-version.module";
+import { BookVersion } from "./book-version/models/book-version.model";
+import { AudioBookModule } from "./audio-book/audio-book.module";
+import { AudioPartsModule } from "./audio-parts/audio-parts.module";
+import { AudioBook } from "./audio-book/models/audio-book.model";
+import { AudioPart } from "./audio-parts/models/audio-part.model";
+import { Book } from "./books/models/book.model";
 
 @Module({
   imports: [
@@ -41,7 +49,18 @@ import { Language } from './languages/models/language.model';
       username: process.env.PG_USER,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DB,
-      models: [User, Admin, Genre, Categories, Authors, Language],
+      models: [
+        User,
+        Admin,
+        Genre,
+        Categories,
+        Authors,
+        Language,
+        Book,
+        BookVersion,
+        AudioBook,
+        AudioPart,
+      ],
       autoLoadModels: true,
       logging: false,
       sync: { alter: true },
@@ -55,6 +74,10 @@ import { Language } from './languages/models/language.model';
     CategoriesModule,
     AuthorsModule,
     LanguagesModule,
+    BooksModule,
+    BookVersionModule,
+    AudioBookModule,
+    AudioPartsModule,
   ],
   controllers: [],
   providers: [],
