@@ -1,13 +1,23 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import {
+  BelongsToMany,
+  Column,
+  DataType,
+  HasMany,
+  Model,
+  Table,
+} from "sequelize-typescript";
+import { Collection } from "../../collection/models/collection.model";
+import { BookMark } from "src/book-marks/models/book-mark.model";
+import { Subscribtion } from "src/subscribtion/models/subscribtion.model";
 
 interface IUserCreationAttr {
-    full_name: string;
-    email: string;
-    password: string;
-    phone: string;
-    gender: string;
-    birth_year: number;
+  full_name: string;
+  email: string;
+  password: string;
+  phone: string;
+  gender: string;
+  birth_year: number;
 }
 
 @Table({ tableName: "users" })
@@ -118,4 +128,13 @@ export class User extends Model<User, IUserCreationAttr> {
     type: DataType.STRING(20),
   })
   declare phone: string;
+
+  @HasMany(() => Collection)
+  collections: Collection[];
+
+  @HasMany(() => BookMark)
+  bookMarks: BookMark[];
+
+  @HasMany(() => Subscribtion)
+  subscribtions: Subscribtion[];
 }

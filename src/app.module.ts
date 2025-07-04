@@ -26,6 +26,16 @@ import { AudioPartsModule } from "./audio-parts/audio-parts.module";
 import { AudioBook } from "./audio-book/models/audio-book.model";
 import { AudioPart } from "./audio-parts/models/audio-part.model";
 import { Book } from "./books/models/book.model";
+import { Bot } from "./bot/models/bot.model";
+import { Library } from "./bot/library/model/library.model";
+import { CollectionModule } from './collection/collection.module';
+import { Collection } from "./collection/models/collection.model";
+import { BookCollectionModule } from './book-collection/book-collection.module';
+import { BookCollection } from "./book-collection/models/book-collection.model";
+import { BookMarkModule } from './book-marks/book-mark.module';
+import { BookMark } from "./book-marks/models/book-mark.model";
+import { SubscribtionModule } from './subscribtion/subscribtion.module';
+import { Subscribtion } from "./subscribtion/models/subscribtion.model";
 
 @Module({
   imports: [
@@ -60,6 +70,12 @@ import { Book } from "./books/models/book.model";
         BookVersion,
         AudioBook,
         AudioPart,
+        Bot,
+        Library,
+        Collection,
+        BookCollection,
+        BookMark,
+        Subscribtion
       ],
       autoLoadModels: true,
       logging: false,
@@ -78,6 +94,10 @@ import { Book } from "./books/models/book.model";
     BookVersionModule,
     AudioBookModule,
     AudioPartsModule,
+    CollectionModule,
+    BookCollectionModule,
+    BookMarkModule,
+    SubscribtionModule,
   ],
   controllers: [],
   providers: [],

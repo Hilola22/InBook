@@ -7,6 +7,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { AuthorsModule } from "../authors/authors.module";
 import { Authors } from "../authors/models/author.model";
 import { BookVersionModule } from "../book-version/book-version.module";
+import { BookCollectionModule } from "../book-collection/book-collection.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { BookVersionModule } from "../book-version/book-version.module";
     JwtModule.register({}),
     forwardRef(() => AuthorsModule),
     BookVersionModule,
+    BookCollectionModule
   ],
   controllers: [BooksController],
   providers: [BooksService],

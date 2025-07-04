@@ -1,7 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { BelongsTo, Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript";
+import { BelongsTo, BelongsToMany, Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript";
 import { Authors } from "../../authors/models/author.model";
 import { BookVersion } from "../../book-version/models/book-version.model";
+import { Collection } from "../../collection/models/collection.model";
+import { BookCollection } from "../../book-collection/models/book-collection.model";
+import { BookMark } from "src/book-marks/models/book-mark.model";
 
 interface IBookCreationAttr {
   published_year: number;
@@ -38,10 +41,10 @@ export class Book extends Model<Book, IBookCreationAttr> {
     example: 1,
     description: "Muallifning Idsi",
   })
-  @ForeignKey(()=>Authors)
+  @ForeignKey(() => Authors)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   declare author_id: number;
 
@@ -49,5 +52,11 @@ export class Book extends Model<Book, IBookCreationAttr> {
   author: Authors;
 
   @HasMany(() => BookVersion)
-  book_versions: BookVersion[]
+  book_versions: BookVersion[];
+
+  @BelongsToMany(() => Collection, () => BookCollection)
+  collections: Collection[];
+
+  @HasMany(() => BookMark)
+  bookMarks: BookMark[]
 }
